@@ -95,7 +95,8 @@ public class NamingClientProxyDelegate implements NamingClientProxy {
     
     @Override
     public void registerService(String serviceName, String groupName, Instance instance) throws NacosException {
-        getExecuteClientProxy(instance).registerService(serviceName, groupName, instance);
+        getExecuteClientProxy(instance) //首先根据是否为临时实例，选择客户端类型，临时实例：grpcClientProxy，持久实例：httpClientProxy
+                .registerService(serviceName, groupName, instance);//接着调用客户端的registerService方法注册服务实例
     }
     
     @Override

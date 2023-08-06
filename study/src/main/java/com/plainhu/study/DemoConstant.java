@@ -13,5 +13,7 @@ public class DemoConstant {
 
     public final static Integer SERVER_PORT = 8848;
 
+    public final static Integer SERVICE_PORT = 9999;
+
     public final static String SERVER_ADDRESS = SERVER_IP + StrPool.COLON + SERVER_PORT;
 }

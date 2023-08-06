@@ -24,12 +24,7 @@ import com.alibaba.nacos.api.naming.pojo.ListView;
 import com.alibaba.nacos.api.naming.pojo.Service;
 import com.alibaba.nacos.api.naming.pojo.ServiceInfo;
 import com.alibaba.nacos.api.naming.remote.NamingRemoteConstants;
-import com.alibaba.nacos.api.naming.remote.request.AbstractNamingRequest;
-import com.alibaba.nacos.api.naming.remote.request.BatchInstanceRequest;
-import com.alibaba.nacos.api.naming.remote.request.InstanceRequest;
-import com.alibaba.nacos.api.naming.remote.request.ServiceListRequest;
-import com.alibaba.nacos.api.naming.remote.request.ServiceQueryRequest;
-import com.alibaba.nacos.api.naming.remote.request.SubscribeServiceRequest;
+import com.alibaba.nacos.api.naming.remote.request.*;
 import com.alibaba.nacos.api.naming.remote.response.BatchInstanceResponse;
 import com.alibaba.nacos.api.naming.remote.response.QueryServiceResponse;
 import com.alibaba.nacos.api.naming.remote.response.ServiceListResponse;
@@ -59,11 +54,7 @@ import com.alibaba.nacos.common.remote.client.ServerListFactory;
 import com.alibaba.nacos.common.utils.CollectionUtils;
 import com.alibaba.nacos.common.utils.JacksonUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -123,8 +114,8 @@ public class NamingGrpcClientProxy extends AbstractNamingClientProxy {
     
     @Override
     public void registerService(String serviceName, String groupName, Instance instance) throws NacosException {
-        NAMING_LOGGER.info("[REGISTER-SERVICE] {} registering service {} with instance {}", namespaceId, serviceName,
-                instance);
+        NAMING_LOGGER.info("[REGISTER-SERVICE] {} registering service {} with instance {}", namespaceId, serviceName, instance);
+        //缓存当前实例，作为后面重连服务器时，进行重新注册和订阅
         redoService.cacheInstanceForRedo(serviceName, groupName, instance);
         doRegisterService(serviceName, groupName, instance);
     }
@@ -210,9 +201,11 @@ public class NamingGrpcClientProxy extends AbstractNamingClientProxy {
      * @throws NacosException nacos exception
      */
     public void doRegisterService(String serviceName, String groupName, Instance instance) throws NacosException {
-        InstanceRequest request = new InstanceRequest(namespaceId, serviceName, groupName,
-                NamingRemoteConstants.REGISTER_INSTANCE, instance);
+        //创建注册实例请求
+        InstanceRequest request = new InstanceRequest(namespaceId, serviceName, groupName, NamingRemoteConstants.REGISTER_INSTANCE, instance);
+        //向Nacos服务器端，发送该请求
         requestToServer(request, Response.class);
+        //redoService标记此服务注册成功
         redoService.instanceRegistered(serviceName, groupName);
     }
     
@@ -352,14 +345,11 @@ public class NamingGrpcClientProxy extends AbstractNamingClientProxy {
     public boolean serverHealthy() {
         return rpcClient.isRunning();
     }
-    
-    private <T extends Response> T requestToServer(AbstractNamingRequest request, Class<T> responseClass)
-            throws NacosException {
+
+    private <T extends Response> T requestToServer(AbstractNamingRequest request, Class<T> responseClass) throws NacosException {
         try {
-            request.putAllHeader(
-                    getSecurityHeaders(request.getNamespace(), request.getGroupName(), request.getServiceName()));
-            Response response =
-                    requestTimeout < 0 ? rpcClient.request(request) : rpcClient.request(request, requestTimeout);
+            request.putAllHeader(getSecurityHeaders(request.getNamespace(), request.getGroupName(), request.getServiceName()));
+            Response response = requestTimeout < 0 ? rpcClient.request(request) : rpcClient.request(request, requestTimeout);
             if (ResponseCode.SUCCESS.getCode() != response.getResultCode()) {
                 throw new NacosException(response.getErrorCode(), response.getMessage());
             }

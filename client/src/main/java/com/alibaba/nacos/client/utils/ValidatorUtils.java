@@ -33,6 +33,7 @@ public final class ValidatorUtils {
     private static final Pattern CONTEXT_PATH_MATCH = Pattern.compile("(\\/)\\1+");
     
     public static void checkInitParam(NacosClientProperties properties) throws NacosException {
+        //检查contextPath（应用的上下文路径）
         checkContextPath(properties.getProperty(PropertyKeyConst.CONTEXT_PATH));
     }
     

@@ -40,11 +40,7 @@ import com.alibaba.nacos.client.utils.ValidatorUtils;
 import com.alibaba.nacos.common.notify.NotifyCenter;
 import com.alibaba.nacos.common.utils.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Nacos Naming Service.
@@ -86,19 +82,30 @@ public class NacosNamingService implements NamingService {
     }
     
     private void init(Properties properties) throws NacosException {
+        //将入参Properties转换为NacosClientProperties
+        //NacosClientProperties目前包含三类参数 ①传进来的Properties②JVM参数③SystemEnv环境变量参数
         final NacosClientProperties nacosClientProperties = NacosClientProperties.PROTOTYPE.derive(properties);
-        
+        //参数校验
         ValidatorUtils.checkInitParam(nacosClientProperties);
+        //namespece="public"
         this.namespace = InitUtils.initNamespaceForNaming(nacosClientProperties);
         InitUtils.initSerialization();
         InitUtils.initWebRootContext(nacosClientProperties);
         initLogName(nacosClientProperties);
-    
+        //初始化：notifierEventScope随机生成
         this.notifierEventScope = UUID.randomUUID().toString();
+        //初始化：InstancesChange事件订阅者
         this.changeNotifier = new InstancesChangeNotifier(this.notifierEventScope);
+        //向NotifyCenter注册InstancesChange事件发布者
         NotifyCenter.registerToPublisher(InstancesChangeEvent.class, 16384);
+        //向NotifyCenter注册InstancesChange事件订阅者，监听服务实例更新事件
         NotifyCenter.registerSubscriber(changeNotifier);
+
+        //初始化：服务信息持有器，当前serviceInfoMap为空，
+        // ServiceInfo缓存目录：C:\Users\hkt\nacos\naming\public
+        // ServiceInfo容灾备份目录：C:\Users\hkt\nacos\naming\public/failover
         this.serviceInfoHolder = new ServiceInfoHolder(namespace, this.notifierEventScope, nacosClientProperties);
+        //初始化：Naming客户端代理，包括httpClientProxy和grpcClientProxy
         this.clientProxy = new NamingClientProxyDelegate(this.namespace, serviceInfoHolder, nacosClientProperties, changeNotifier);
     }
     
@@ -124,6 +131,7 @@ public class NacosNamingService implements NamingService {
     @Override
     public void registerInstance(String serviceName, String groupName, String ip, int port, String clusterName)
             throws NacosException {
+        //默认创建的就是临时实例
         Instance instance = new Instance();
         instance.setIp(ip);
         instance.setPort(port);

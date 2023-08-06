@@ -24,11 +24,7 @@ import com.alibaba.nacos.api.selector.NoneSelector;
 import com.alibaba.nacos.api.selector.SelectorType;
 import com.alibaba.nacos.client.env.NacosClientProperties;
 import com.alibaba.nacos.client.env.SourceType;
-import com.alibaba.nacos.client.utils.ContextPathUtil;
-import com.alibaba.nacos.client.utils.LogUtils;
-import com.alibaba.nacos.client.utils.ParamUtil;
-import com.alibaba.nacos.client.utils.TemplateUtils;
-import com.alibaba.nacos.client.utils.TenantUtil;
+import com.alibaba.nacos.client.utils.*;
 import com.alibaba.nacos.common.utils.JacksonUtils;
 import com.alibaba.nacos.common.utils.StringUtils;
 
@@ -81,11 +77,12 @@ public class InitUtils {
         tmpNamespace = TemplateUtils.stringEmptyAndThenExecute(tmpNamespace, () -> UtilAndComs.DEFAULT_NAMESPACE_ID);
         return tmpNamespace;
     }
-    
+
     /**
      * Init web root context.
      *
-     * @param properties properties
+     * @param properties propertie
+     *                   s
      * @since 1.4.1
      */
     public static void initWebRootContext(NacosClientProperties properties) {
@@ -136,7 +133,7 @@ public class InitUtils {
         
         return endpointUrl + ":" + endpointPort;
     }
-    
+
     /**
      * Register subType for serialization.
      *
@@ -146,7 +143,7 @@ public class InitUtils {
      * </p>
      *
      * <p>
-     * 子类实现类中的静态代码串中已经向Jackson进行了注册，但是由于classloader的原因，只有当 该子类被使用的时候，才会加载该类。这可能会导致Jackson先进性反序列化，再注册子类，从而导致 反序列化失败。
+     * 子类实现类中的静态代码串中已经向Jackson进行了注册，但是由于classloader的原因，只有当该子类被使用的时候，才会加载该类。这可能会导致Jackson先进行反序列化，再注册子类，从而导致反序列化失败。
      * </p>
      */
     public static void initSerialization() {

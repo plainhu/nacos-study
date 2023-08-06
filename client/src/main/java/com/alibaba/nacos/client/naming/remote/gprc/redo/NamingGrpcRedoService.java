@@ -30,16 +30,13 @@ import com.alibaba.nacos.common.remote.client.ConnectionEventListener;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * Naming client gprc redo service.
  *
  * <p>When connection reconnect to server, redo the register and subscribe.
+ * <p>当connection重新连接到服务器时，重做注册和订阅。
  *
  * @author xiweng.yy
  */

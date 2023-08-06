@@ -16,15 +16,17 @@ public class DiscoverDemo {
 
     public static void main(String[] args) throws NacosException, InterruptedException {
         register();
-        Thread.sleep(60000);
+//        Thread.sleep(60000);
     }
 
 
     static void register() throws NacosException {
         Properties properties = new Properties();
         properties.put("serverAddr", DemoConstant.SERVER_ADDRESS);
+        //创建NamingService对象
         NamingService namingService = NamingFactory.createNamingService(properties);
-        namingService.registerInstance(DiscoverDemo.class.getTypeName(), DemoConstant.SERVER_IP, DemoConstant.SERVER_PORT);
+        //调用registerInstance注册服务实例
+        namingService.registerInstance(DiscoverDemo.class.getTypeName(), DemoConstant.SERVER_IP, DemoConstant.SERVICE_PORT);
     }
 
 }

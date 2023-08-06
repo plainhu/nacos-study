@@ -39,11 +39,7 @@ import com.alibaba.nacos.common.utils.ThreadUtils;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -53,7 +49,7 @@ import static com.alibaba.nacos.client.utils.LogUtils.NAMING_LOGGER;
 import static com.alibaba.nacos.common.constant.RequestUrlConstants.HTTP_PREFIX;
 
 /**
- * Server list manager.
+ * NacosServer的服务列表
  *
  * @author xiweng.yy
  */

@@ -54,25 +54,35 @@ public class EphemeralClientOperationServiceImpl implements ClientOperationServi
     
     @Override
     public void registerInstance(Service service, Instance instance, String clientId) throws NacosException {
+        //服务实例基本检查
         NamingUtils.checkInstanceIsLegal(instance);
-    
+
+        //确保Service单例存在(从singletonRepository中取出)
         Service singleton = ServiceManager.getInstance().getSingleton(service);
+        //如果当前服务是持久性的（Nacos2.x将服务划分为临时和持久），报错：当前服务是持久性的，不允许注册临时实例
         if (!singleton.isEphemeral()) {
-            throw new NacosRuntimeException(NacosException.INVALID_PARAM,
-                    String.format("Current service %s is persistent service, can't register ephemeral instance.",
-                            singleton.getGroupedServiceName()));
+            throw new NacosRuntimeException(NacosException.INVALID_PARAM, String.format("Current service %s is persistent service, can't register ephemeral instance.", singleton.getGroupedServiceName()));
         }
+
+        //根据客户端id，找到Client实例
+        //这里使用的是GRPC进行通信，所以Client使用的是ConnectionBasedClient这个实现类。
         Client client = clientManager.getClient(clientId);
         if (!clientIsLegal(client, clientId)) {
             return;
         }
+        //客户端Instance模型，转换为服务端Instance模型
         InstancePublishInfo instanceInfo = getPublishInfo(instance);
+        //将client、service、instance建立起关系以及发布事件
         client.addServiceInstance(singleton, instanceInfo);
+        //设置最后更新时间
         client.setLastUpdatedTime();
+        //重新计算修正
         client.recalculateRevision();
+
+        //发布服务实例注册事件
         NotifyCenter.publishEvent(new ClientOperationEvent.ClientRegisterServiceEvent(singleton, clientId));
-        NotifyCenter
-                .publishEvent(new MetadataEvent.InstanceMetadataEvent(singleton, instanceInfo.getMetadataId(), false));
+        //发布服务实例元数据事件
+        NotifyCenter.publishEvent(new MetadataEvent.InstanceMetadataEvent(singleton, instanceInfo.getMetadataId(), false));
     }
     
     @Override

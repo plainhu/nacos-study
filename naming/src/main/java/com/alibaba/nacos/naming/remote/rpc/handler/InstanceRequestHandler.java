@@ -49,21 +49,18 @@ public class InstanceRequestHandler extends RequestHandler<InstanceRequest, Inst
     @Override
     @Secured(action = ActionTypes.WRITE)
     public InstanceResponse handle(InstanceRequest request, RequestMeta meta) throws NacosException {
-        Service service = Service
-                .newService(request.getNamespace(), request.getGroupName(), request.getServiceName(), true);
+        Service service = Service.newService(request.getNamespace(), request.getGroupName(), request.getServiceName(), true);
         switch (request.getType()) {
             case NamingRemoteConstants.REGISTER_INSTANCE:
                 return registerInstance(service, request, meta);
             case NamingRemoteConstants.DE_REGISTER_INSTANCE:
                 return deregisterInstance(service, request, meta);
             default:
-                throw new NacosException(NacosException.INVALID_PARAM,
-                        String.format("Unsupported request type %s", request.getType()));
+                throw new NacosException(NacosException.INVALID_PARAM, String.format("Unsupported request type %s", request.getType()));
         }
     }
-    
-    private InstanceResponse registerInstance(Service service, InstanceRequest request, RequestMeta meta)
-            throws NacosException {
+
+    private InstanceResponse registerInstance(Service service, InstanceRequest request, RequestMeta meta) throws NacosException {
         clientOperationService.registerInstance(service, request.getInstance(), meta.getConnectionId());
         NotifyCenter.publishEvent(new RegisterInstanceTraceEvent(System.currentTimeMillis(),
                 meta.getClientIp(), true, service.getNamespace(), service.getGroup(), service.getName(),

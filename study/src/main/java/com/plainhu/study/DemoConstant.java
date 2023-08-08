@@ -9,11 +9,17 @@ import cn.hutool.core.text.StrPool;
  */
 public class DemoConstant {
 
-    public final static String SERVER_IP = "127.0.0.1";
+    public final static String NACOS_IP = "127.0.0.1";
 
-    public final static Integer SERVER_PORT = 8848;
+    public final static String SERVICE_IP = "127.0.0.1";
+
+    public final static Integer NACOS_PORT = 8848;
 
     public final static Integer SERVICE_PORT = 9999;
 
-    public final static String SERVER_ADDRESS = SERVER_IP + StrPool.COLON + SERVER_PORT;
+    public final static String NACOS_ADDRESS = NACOS_IP + StrPool.COLON + NACOS_PORT;
+
+    public final static String SERVICE_ADDRESS = SERVICE_IP + StrPool.COLON + SERVICE_PORT;
+    public static final String NACOS_USERNAME = "nacos";
+    public static final String NACOS_PASSWORD = "nacos";
 }

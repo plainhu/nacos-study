@@ -340,24 +340,31 @@ public class NamingGrpcClientProxy extends AbstractNamingClientProxy {
         requestToServer(request, SubscribeServiceResponse.class);
         redoService.removeSubscriberForRedo(serviceName, groupName, clusters);
     }
-    
+
     @Override
     public boolean serverHealthy() {
         return rpcClient.isRunning();
     }
 
+    /**
+     * 请求服务器
+     */
     private <T extends Response> T requestToServer(AbstractNamingRequest request, Class<T> responseClass) throws NacosException {
         try {
+            //给InstanceRequest填充请求头参数
             request.putAllHeader(getSecurityHeaders(request.getNamespace(), request.getGroupName(), request.getServiceName()));
+            //调用rpcClient的request方法发送InstanceRequest请求，如果客户端配置了请求超时时间就进行设置
             Response response = requestTimeout < 0 ? rpcClient.request(request) : rpcClient.request(request, requestTimeout);
+            //如果response状态码不为success，抛出异常
             if (ResponseCode.SUCCESS.getCode() != response.getResultCode()) {
                 throw new NacosException(response.getErrorCode(), response.getMessage());
             }
+            //isAssignableFrom是用来判断子类和父类的关系的，或者接口的实现类和接口的关系的。
+            //判断下两个类是否是父子关系，如果是，可以进行类型强转
             if (responseClass.isAssignableFrom(response.getClass())) {
                 return (T) response;
             }
-            NAMING_LOGGER.error("Server return unexpected response '{}', expected response should be '{}'",
-                    response.getClass().getName(), responseClass.getName());
+            NAMING_LOGGER.error("Server return unexpected response '{}', expected response should be '{}'", response.getClass().getName(), responseClass.getName());
         } catch (NacosException e) {
             throw e;
         } catch (Exception e) {

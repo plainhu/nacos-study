@@ -40,7 +40,7 @@ public class DiscoverDemo {
     }
 
     public static void main(String[] args) throws NacosException, InterruptedException {
-        registerInstance();
+        subscribe();
 //        Thread.sleep(60000);
     }
 
@@ -110,8 +110,8 @@ public class DiscoverDemo {
     }
 
     /**
-     * 监听/取消监听服务
-     * 监听/取消监听服务下的实例列表变化。
+     * 订阅（监听）服务
+     * 监听服务下的实例列表变化。
      */
     static void subscribe() throws NacosException {
         EventListener eventListener = event -> {
@@ -126,6 +126,19 @@ public class DiscoverDemo {
          * 参数 listener：事件监听器
          */
         namingService.subscribe(SERVICE_NAME, eventListener);
+    }
+
+    /**
+     * 取消订阅（监听）服务
+     */
+    static void unsubscribe() throws NacosException {
+        EventListener eventListener = event -> {
+            if (event instanceof NamingEvent) {
+                NamingEvent namingEvent = (NamingEvent) event;
+                System.out.println(namingEvent.getServiceName());
+                System.out.println(namingEvent.getInstances());
+            }
+        };
         namingService.unsubscribe(SERVICE_NAME, eventListener);
     }
 
